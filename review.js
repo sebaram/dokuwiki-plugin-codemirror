@@ -191,7 +191,7 @@
             bar.appendChild(button('Reject all', api.rejectAll));
             bar.appendChild(button('Accept all', api.acceptAll,
                 'cm-ai-accept'));
-            wrapper.parentNode.insertBefore(bar, wrapper);
+            wrapper.parentNode.insertBefore(bar, field);
             list.forEach(function(index) {
                 var change = changes[index], start = offset(index);
                 var from = cm.posFromIndex(start);

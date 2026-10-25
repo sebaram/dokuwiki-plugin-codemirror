@@ -1,18 +1,30 @@
 # Local compatibility checks
 
+`npm run test:review` tests actual CodeMirror inline decorations, partial/all
+acceptance, rejection, native Undo, UTF-16 offsets and stale editor teardown.
+The adjacent AI Assistant repository's `tests/integration/editor-chat.browser.cjs`
+and `editor-chat-lifecycle.browser.cjs` test the new chat, MCP and Save boundaries.
+They use a separate `/tmp/editor-chat-wiki` fixture, not the saved-profile wiki.
+
+For the older comparison-card compatibility check below, set
+`CODEMIRROR_TEST_LEGACY_CHAT=1` when using AI Assistant 0.1.0. That check blocks
+only the new chat module; the dedicated chat tests exercise the current UI.
+
 `npm test` checks DokuWiki tokens, quoted formatting, CamelCase links, plugin
 delimiters, protected text and embedded code without a browser or wiki.
 
 `npm run test:browser` needs a **disposable loopback-only** DokuWiki instance
 with Fastwiki, ProseMirror and AI Assistant enabled, two mock AI profiles and
 `codesyntax`/`camelcase` enabled. It writes only the synthetic `codemirror_test`
-page. Do not point it at a real wiki. Requests to non-loopback hosts are blocked.
+page (with a fresh timestamp by default). Do not point it at a real wiki.
+Requests to non-loopback hosts are blocked.
 
-The existing fixture is `/tmp/aiassist-extension-mirror/wiki`, served on
-`http://127.0.0.1:18960`, with the fake API on port 18961. Its provisioner,
-router and fake provider are in the adjacent `dokuwiki-ai-assistant` repository
-under `tests/hosting/extension-mirror` and `tests/integration`. No production
-credentials or `testing-wiki.env` are used.
+The current mock fixture is `/tmp/editor-chat-wiki`, served on
+`http://127.0.0.1:18962`, with the fake API on port 18963. Provision it using
+the adjacent `dokuwiki-ai-assistant` repository's
+`tests/hosting/editor-chat/README.md`. The older extension mirror on port
+18960 now contains the separately authorized live profile and must not be
+used for automatic regression tests.
 
 Build and copy the plugin's release files (including `dist`) to
 `lib/plugins/codemirror`, enable CodeMirror, and install the companion
@@ -20,7 +32,7 @@ AI Assistant `editor.js` adapter for the save-and-continue check. Then run:
 
 ```sh
 npx playwright install chromium
-CODEMIRROR_TEST_URL=http://127.0.0.1:18960 npm run test:browser
+CODEMIRROR_TEST_URL=http://127.0.0.1:18962 CODEMIRROR_TEST_LEGACY_CHAT=1 npm run test:browser
 ```
 
 Defaults are the fixture's fake administrator `admin` / `local-test-password`.
@@ -37,7 +49,11 @@ ProseMirror switching, preview, native save, Fastwiki AJAX lifecycle, settings,
 save-and-continue position restoration, mobile layout and read-only source.
 It records extension states and fails on uncaught browser errors.
 
-`npm run test:sections` creates a new timestamped disposable page and exercises
+The older `npm run test:sections` requires the original extension-mirror mock
+provider and comparison-card UI. Reprovision a disposable mock wiki and set
+`CODEMIRROR_TEST_URL` and `CODEMIRROR_TEST_ROOT` explicitly before using it.
+The current `editor-chat-lifecycle.browser.cjs` covers the new section chat.
+The older section test creates a new timestamped disposable page and exercises
 actual keyboard editing, exact highlighted code and native clipboard copying,
 AI-selected-text Apply/undo, Fastwiki inline section
 edit/preview/cancel, AI refinement within a section, reviewed Apply/undo/redo,

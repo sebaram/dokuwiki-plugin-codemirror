@@ -36,6 +36,7 @@ const root = path.resolve(__dirname, '..');
         });
         assert.equal(await page.locator('#wiki__text').inputValue(), 'Before\n😀 red and blue.\nAfter');
         assert.equal(await page.locator('.cm-ai-chunk').count(), 2);
+        assert(await page.evaluate(() => field.nextElementSibling.CodeMirror === cm), 'Review must preserve the native textarea/CodeMirror adjacency used by save-position helpers');
         await page.evaluate(() => review.accept(1));
         assert.equal(await page.locator('#wiki__text').inputValue(), 'Before\n😀 red and gold.\nAfter');
         await page.evaluate(() => review.accept(0));

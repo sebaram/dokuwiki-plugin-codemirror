@@ -4,4 +4,4 @@ email  albertgasset@fsfe.org
 date   2026-10-25
 name   CodeMirror plugin
 desc   Editor with syntax highlighting
-url    https://github.com/albertgasset/dokuwiki-plugin-codemirror
+url    https://github.com/sebaram/dokuwiki-plugin-codemirror

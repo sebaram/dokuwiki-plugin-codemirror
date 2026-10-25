@@ -5,7 +5,8 @@ Documentation for this plugin can be found at
 http://www.dokuwiki.org/plugin:codemirror
 
 Source code for this plugin can be found at
-https://github.com/albertgasset/dokuwiki-plugin-codemirror
+https://github.com/sebaram/dokuwiki-plugin-codemirror
+(maintained fork of Albert Gasset's plugin).
 
 Modern DokuWiki compatibility
 ----------------------------
@@ -25,8 +26,14 @@ plugin grammars are not validated by this editor.
 
 When dokuwiki-ai-assistant is enabled, use its toolbar button or Ctrl/Cmd+K
 to work on the current selection (or the entire document with no selection).
-Desktop AI review opens as a side panel; mobile keeps the floating card.
-Generated text is applied only after review and can be undone in the editor.
+With AI Assistant 0.1.0, conversation lives in a sidebar and suggested
+additions/deletions appear directly in this editor. Accept or reject individual
+changes or the entire proposal. Accepted changes use normal Undo/Redo. Proposed
+text is not submitted by Preview or Save until accepted. Only an explicit Save
+creates a DokuWiki revision; AI conversation does not create checkpoints.
+The sidebar can use administrator-approved read-only MCP tools when enabled
+for that conversation. Chat stays in memory for the open editing session.
+Older AI Assistant versions retain their existing comparison-card flow.
 The companion compat/aiassist-editor.patch also restores CodeMirror
 selection/scroll after AI Assistant's Ctrl/Cmd+S shortcut. Apply it from
 the aiassist plugin directory with patch -p1 (or install the updated editor.js

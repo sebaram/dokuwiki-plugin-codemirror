@@ -3,11 +3,11 @@ const {chromium} = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const base = process.env.CODEMIRROR_TEST_URL || 'http://127.0.0.1:18960';
+const base = process.env.CODEMIRROR_TEST_URL || 'http://127.0.0.1:18962';
 const output = process.env.CODEMIRROR_TEST_OUTPUT || '/tmp/codemirror-browser';
 assert(['localhost', '127.0.0.1'].includes(new URL(base).hostname));
 fs.mkdirSync(output, {recursive: true});
-const checks = [], errors = [], id = process.env.CODEMIRROR_TEST_PAGE || 'codemirror_test';
+const checks = [], errors = [], id = process.env.CODEMIRROR_TEST_PAGE || ('codemirror_test_' + Date.now());
 const source = '====== CodeMirror compatibility ======\n\n한국어 **bold** and //italic//.\n\n' +
     '> **quoted**\n\n^ Heading ^ Value ^\n| WikiWord | 42 |\n\n  * First item\n\n' +
     '<WRAP center>Plugin content</WRAP>\n{{tag>test}}\n\n' +
@@ -18,8 +18,11 @@ const source = '====== CodeMirror compatibility ======\n\n한국어 **bold** and
     const browser = await chromium.launch({headless: true,
         executablePath: process.env.CHROMIUM_EXECUTABLE || undefined});
     const context = await browser.newContext({viewport: {width: 1440, height: 1100}});
-    await context.route('**/*', route => ['localhost', '127.0.0.1'].includes(new URL(route.request().url()).hostname)
-        ? route.continue() : route.abort());
+    await context.route('**/*', route => {
+        const url = new URL(route.request().url());
+        if (process.env.CODEMIRROR_TEST_LEGACY_CHAT === '1' && url.pathname.endsWith('/aiassist/chat.js')) return route.abort();
+        return ['localhost', '127.0.0.1'].includes(url.hostname) ? route.continue() : route.abort();
+    });
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(error.stack));
     page.on('dialog', dialog => dialog.accept());
