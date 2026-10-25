@@ -8,6 +8,18 @@ Source code for this plugin can be found at
 https://github.com/sebaram/dokuwiki-plugin-codemirror
 (maintained fork of Albert Gasset's plugin).
 
+Install a release
+-----------------
+
+Download dokuwiki-plugin-codemirror.tar.gz and SHA256SUMS from
+https://github.com/sebaram/dokuwiki-plugin-codemirror/releases/tag/2026-10-25
+and install the archive through DokuWiki's Extension Manager. The install
+archive includes the generated dist files. GitHub's automatic source archives
+require the build steps below before deployment.
+
+For editor chat and inline AI review, also install AI Assistant 0.1.0 from
+https://github.com/sebaram/dokuwiki-ai-assistant/releases/tag/v0.1.0
+
 Modern DokuWiki compatibility
 ----------------------------
 
