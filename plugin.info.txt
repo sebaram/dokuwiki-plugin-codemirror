@@ -1,8 +1,8 @@
-base   codemirror
+base   codemirrorenhanced
 author sebaram
 email
 date   2026-10-25
-version 2026-10-25.1
+version 2026-10-25.2
 name   CodeMirror Enhanced
 desc   CodeMirror editor maintained by sebaram with modern DokuWiki support and inline AI review
 url    https://github.com/sebaram/dokuwiki-plugin-codemirror

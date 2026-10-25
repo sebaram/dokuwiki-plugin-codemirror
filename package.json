@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build": "grunt",
-    "test": "node tests/mode.cjs && node tests/review.cjs",
+    "test": "node tests/mode.cjs && node tests/review.cjs && php tests/plugin.php",
     "test:review": "node tests/review.browser.cjs",
     "test:browser": "node tests/browser.cjs",
     "test:sections": "node tests/fastwiki-section.browser.cjs"

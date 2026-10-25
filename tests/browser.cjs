@@ -43,7 +43,9 @@ const source = '====== CodeMirror compatibility ======\n\n한국어 **bold** and
             id: node.dataset.ext,
             enabled: !Array.from(node.querySelectorAll('button')).some(button => button.textContent.trim() === 'Enable')
         })));
-        assert(inventory.find(plugin => plugin.id === 'codemirror' && plugin.enabled));
+        assert(inventory.find(plugin => plugin.id === 'codemirrorenhanced' && plugin.enabled));
+        assert(!inventory.some(plugin => plugin.id === 'codemirror'), 'Remove the old plugin from the migrated fixture');
+        assert(!(await page.locator('section[data-ext="codemirrorenhanced"] .notices').textContent()).includes('marked as conflicting'));
         fs.writeFileSync(path.join(output, 'extensions.json'), JSON.stringify(inventory, null, 2));
         pass('Extension Manager loads with CodeMirror enabled; installed extension states recorded');
 

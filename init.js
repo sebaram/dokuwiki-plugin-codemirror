@@ -243,7 +243,7 @@ jQuery(function() {
             }
         },
         nativeeditor: {
-            default_: JSINFO.plugin_codemirror.nativeeditor.toString(),
+            default_: JSINFO.plugin_codemirrorenhanced.nativeeditor.toString(),
             callback: function(value) {
                 if (!cm && value === '0') {
                     initCodeMirror();
@@ -378,7 +378,7 @@ jQuery(function() {
     }
 
     function highlightCode() {
-        if (JSINFO.plugin_codemirror.codesyntax.toString() !== '1') {
+        if (JSINFO.plugin_codemirrorenhanced.codesyntax.toString() !== '1') {
             return;
         }
         // Wiki-Style Script also discards the native clipboard handlers.
@@ -456,7 +456,7 @@ jQuery(function() {
             window.DWsetSelection(selection);
         }
 
-        if(JSINFO.plugin_codemirror.autoheight.toString() === '1') {
+        if(JSINFO.plugin_codemirrorenhanced.autoheight.toString() === '1') {
             jQuery(
                 '#size__ctl img[src$="/larger.gif"], ' +
                 '#size__ctl img[src$="/smaller.gif"]'
@@ -488,7 +488,7 @@ jQuery(function() {
         });
         cm.setOption(
             'scrollbarStyle',
-            JSINFO.plugin_codemirror.usenativescroll.toString() === '1' ?
+            String(JSINFO.plugin_codemirrorenhanced.usenativescroll) === '1' ?
                 'native' : 'overlay'
         );
         cm.setSize(null, textarea.css('height'));
@@ -527,7 +527,7 @@ jQuery(function() {
         });
         window.DWsetSelection(selection);
 
-        if(JSINFO.plugin_codemirror.autoheight.toString() === '1') {
+        if(JSINFO.plugin_codemirrorenhanced.autoheight.toString() === '1') {
             jQuery('form#dw__editform .CodeMirror').css({ height: 'auto' });
             jQuery(
                 '#size__ctl img[src$="/larger.gif"], ' +
@@ -610,7 +610,7 @@ jQuery(function() {
     }
 
     function initMode() {
-        dokuMode = JSINFO.plugin_codemirror;
+        dokuMode = JSINFO.plugin_codemirrorenhanced;
 
         dokuMode.name = 'doku';
 
@@ -735,7 +735,7 @@ jQuery(function() {
     function initSettingsButton(menu) {
         var button = jQuery('<img>').attr('class', 'cm-settings-button');
 
-        button.attr('src', JSINFO.plugin_codemirror.iconURL);
+        button.attr('src', JSINFO.plugin_codemirrorenhanced.iconURL);
         button.on('click', function() {
             var btnOffset = jQuery(this).offset();
             var btnWidth = jQuery(this).outerWidth();
@@ -778,7 +778,7 @@ jQuery(function() {
             }
 
             var setting = settings[name];
-            var title = LANG.plugins.codemirror['setting_' + name];
+            var title = LANG.plugins.codemirrorenhanced['setting_' + name];
 
             var item = jQuery('<li>');
             var link = jQuery('<a>').html(title);
@@ -978,7 +978,7 @@ jQuery(function() {
     }
 
     function url(path) {
-        return (JSINFO.plugin_codemirror.baseURL + path +
-                '?v=' + JSINFO.plugin_codemirror.version);
+        return (JSINFO.plugin_codemirrorenhanced.baseURL + path +
+                '?v=' + JSINFO.plugin_codemirrorenhanced.version);
     }
 });

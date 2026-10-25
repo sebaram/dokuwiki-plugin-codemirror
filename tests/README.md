@@ -11,7 +11,8 @@ For the older comparison-card compatibility check below, set
 only the new chat module; the dedicated chat tests exercise the current UI.
 
 `npm test` checks DokuWiki tokens, quoted formatting, CamelCase links, plugin
-delimiters, protected text and embedded code without a browser or wiki.
+delimiters, protected text, embedded code, the distinct plugin namespace,
+legacy setting fallback, new overrides and the duplicate-editor guard.
 
 `npm run test:browser` needs a **disposable loopback-only** DokuWiki instance
 with Fastwiki, ProseMirror and AI Assistant enabled, two mock AI profiles and
@@ -27,7 +28,8 @@ the adjacent `dokuwiki-ai-assistant` repository's
 used for automatic regression tests.
 
 Build and copy the plugin's release files (including `dist`) to
-`lib/plugins/codemirror`, enable CodeMirror, and install the companion
+`lib/plugins/codemirrorenhanced`, remove the old codemirror installation,
+enable CodeMirror Enhanced, and install the companion
 AI Assistant `editor.js` adapter for the save-and-continue check. Then run:
 
 ```sh

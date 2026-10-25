@@ -8,12 +8,28 @@
 
 if(!defined('DOKU_INC')) die();
 
-class action_plugin_codemirror extends \dokuwiki\Extension\ActionPlugin {
+class action_plugin_codemirrorenhanced extends \dokuwiki\Extension\ActionPlugin {
 
     static $actions = array('edit', 'create', 'source', 'preview',
                             'locked', 'draft', 'recover', 'show');
 
+    public function loadConfig() {
+        global $conf;
+        foreach (array('nativeeditor', 'codesyntax', 'usenativescroll', 'autoheight') as $name) {
+            if (!isset($conf['plugin']['codemirrorenhanced'][$name]) &&
+                isset($conf['plugin']['codemirror'][$name])) {
+                $conf['plugin']['codemirrorenhanced'][$name] = $conf['plugin']['codemirror'][$name];
+            }
+        }
+        parent::loadConfig();
+    }
+
     public function register(\dokuwiki\Extension\EventHandler $controller) {
+        global $plugin_controller;
+        // Keep one editor until the administrator disables the old plugin.
+        if ($plugin_controller->isEnabled('codemirror')) {
+            return;
+        }
         $controller->register_hook('TPL_METAHEADER_OUTPUT', 'BEFORE',
                                    $this, 'handle_tpl_metaheader_output');
     }
@@ -28,7 +44,7 @@ class action_plugin_codemirror extends \dokuwiki\Extension\ActionPlugin {
         $info = $this->getInfo();
         $version = str_replace('-', '', $info['date']) . '-' .
             filemtime(__DIR__ . '/dist/scripts.min.js');
-        $base_url = DOKU_BASE . 'lib/plugins/codemirror';
+        $base_url = DOKU_BASE . 'lib/plugins/codemirrorenhanced';
         $acronyms = array_keys(getAcronyms());
         usort($acronyms, function ($a, $b) { return strlen($b) <=> strlen($a); });
 
@@ -55,7 +71,7 @@ class action_plugin_codemirror extends \dokuwiki\Extension\ActionPlugin {
 
         $event->data['script'][] = array(
             'type' => 'text/javascript',
-            '_data' => 'JSINFO.plugin_codemirror = ' . json_encode($jsinfo,
+            '_data' => 'JSINFO.plugin_codemirrorenhanced = ' . json_encode($jsinfo,
                 JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';',
         );
 

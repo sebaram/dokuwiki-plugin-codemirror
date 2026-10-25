@@ -3,10 +3,10 @@ CodeMirror Enhanced for DokuWiki
 
 Maintained and adapted by sebaram, based on Albert Gasset's original
 CodeMirror plugin. Original copyright and GPL licensing are preserved below.
-The plugin ID and installation directory remain codemirror for existing
-settings, integrations and in-place updates.
+The plugin ID is codemirrorenhanced and the installation directory is
+lib/plugins/codemirrorenhanced. This fork has its own extension identity.
 
-Documentation for this plugin can be found at
+Upstream syntax-editor documentation can be found at
 http://www.dokuwiki.org/plugin:codemirror
 
 Source code for this plugin can be found at
@@ -16,14 +16,36 @@ https://github.com/sebaram/dokuwiki-plugin-codemirror
 Install a release
 -----------------
 
-Download dokuwiki-plugin-codemirror.tar.gz and SHA256SUMS from
-https://github.com/sebaram/dokuwiki-plugin-codemirror/releases/tag/2026-10-25.1
+Download codemirrorenhanced.tar.gz and SHA256SUMS from
+https://github.com/sebaram/dokuwiki-plugin-codemirror/releases/tag/2026-10-25.2
 and install the archive through DokuWiki's Extension Manager. The install
 archive includes the generated dist files. GitHub's automatic source archives
 require the build steps below before deployment.
 
 For editor chat and inline AI review, also install AI Assistant 0.1.0 from
 https://github.com/sebaram/dokuwiki-ai-assistant/releases/tag/v0.1.0
+
+Migrate an existing codemirror installation
+------------------------------------------
+
+1. Keep a private backup of the old plugin folder and the wiki's root conf/.
+2. Disable the old codemirror plugin in Extension Manager.
+3. Install codemirrorenhanced.tar.gz and enable CodeMirror Enhanced. Check
+   that it is installed at lib/plugins/codemirrorenhanced, not codemirror.
+4. Verify editing, syntax colors, settings and AI chat, then uninstall the
+   old codemirror plugin. Disabled-but-installed codemirror can still cause
+   catalog conflict warnings on other extensions' rows.
+
+The new plugin reads the four existing server settings from
+$conf['plugin']['codemirror'] whenever the corresponding
+$conf['plugin']['codemirrorenhanced'] setting has not been saved. Explicit
+new settings take priority. Browser theme/keymap/editor preferences retain
+their existing cm-* cookies. AI Assistant 0.1.0 needs no runtime update;
+its API profiles remain in the wiki's root conf/.
+
+If both editor plugins are enabled, the new fork waits for the old plugin
+to be disabled, preventing duplicate editors. It does not change plugin
+enablement, rewrite saved settings, or delete the old installation for you.
 
 Modern DokuWiki compatibility
 ----------------------------
@@ -60,11 +82,10 @@ in the install archive and is already applied in the local test wiki.
 Extension Manager compatibility notice
 --------------------------------------
 
-DokuWiki's public extension catalog identifies this installation by the
-codemirror plugin ID. Its conflict list belongs to the upstream catalog
-entry and is not read from this fork's plugin.info.txt. Renaming the display
-name or author cannot remove that catalog warning. The catalog may also
-offer an upstream update; update this fork from its sebaram release archive.
+The distinct codemirrorenhanced ID does not inherit the upstream codemirror
+catalog's conflict declarations or update downloads. Update this fork from
+its sebaram release archive. The separate ID does not add support for other
+plugins by itself.
 
 Fastwiki full and block editing, Preview/Cancel/reopen and exact section
 Save are covered by this fork's browser checks. LinkSuggest is a separate
@@ -83,8 +104,8 @@ Build and checks (Node.js 22+)
     npm test
     npx grunt dist
 
-Install the resulting dokuwiki-plugin-codemirror.tar.gz through Extension
-Manager, or copy the release contents into lib/plugins/codemirror. The dist
+Install the resulting codemirrorenhanced.tar.gz through Extension
+Manager, or copy the release contents into lib/plugins/codemirrorenhanced. The dist
 directory is generated and must be included when deploying from source.
 
 See tests/README.md for browser checks and local extension compatibility
