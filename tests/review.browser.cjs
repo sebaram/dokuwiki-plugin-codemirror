@@ -51,6 +51,23 @@ const root = path.resolve(__dirname, '..');
         assert.equal(await page.locator('#wiki__text').inputValue(), 'XBefore\n😀 red and blue.\nAfter');
         assert.equal(await page.evaluate(() => reviewState.stale), true);
         assert.equal(await page.locator('.cm-ai-chunk').count(), 0);
+        for (const newline of ['\r\n', '\r']) {
+            await page.evaluate(newline => {
+                cm.setValue('red and blue END'); cm.clearHistory();
+                window.review = CodeMirrorAIReview.show(field, {snapshot: cm.getValue(), from: 0, to: 16, parts: [
+                    {type: 'delete', text: 'red'}, {type: 'insert', text: 'green' + newline + 'text'},
+                    {type: 'equal', text: ' and '}, {type: 'delete', text: 'blue'},
+                    {type: 'insert', text: 'gold'}, {type: 'equal', text: ' END'}
+                ]});
+                review.accept(0); review.accept(1);
+            }, newline);
+            assert.equal(await page.locator('#wiki__text').inputValue(), 'green\ntext and gold END',
+                'Partial acceptance must use normalized newline offsets and preserve surrounding source');
+            await page.evaluate(() => cm.undo());
+            assert.equal(await page.locator('#wiki__text').inputValue(), 'green\ntext and blue END');
+            await page.evaluate(() => cm.undo());
+            assert.equal(await page.locator('#wiki__text').inputValue(), 'red and blue END');
+        }
         await page.evaluate(() => {
             openReview(); field.dispatchEvent(new CustomEvent('codemirror:destroy'));
         });

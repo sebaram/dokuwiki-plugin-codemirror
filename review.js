@@ -94,7 +94,7 @@
             var delta = 0;
             changes.slice(0, index).forEach(function(change) {
                 if (change.status === 'accepted') {
-                    delta += change.added.length - change.removed.length;
+                    delta += change.delta;
                 }
             });
             return changes[index].from + delta;
@@ -248,9 +248,12 @@
                         return;
                     }
                     var start = offset(index);
+                    var beforeLength = cm.getValue().length;
                     cm.replaceRange(change.added, cm.posFromIndex(start),
                         cm.posFromIndex(start + change.removed.length),
                         'aiassist');
+                    // CodeMirror can normalize inserted CRLF or CR to LF.
+                    change.delta = cm.getValue().length - beforeLength;
                     change.status = 'accepted';
                 });
             });
