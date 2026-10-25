@@ -439,6 +439,7 @@ jQuery(function() {
     }
 
     function destroyCodeMirror() {
+        textarea.get(0).dispatchEvent(new CustomEvent('codemirror:destroy'));
         var selection = window.DWgetSelection(textarea.get(0));
         var input = textarea.get(0);
         delete input.value;
@@ -825,10 +826,13 @@ jQuery(function() {
 
         menu.menu({position: {my: 'right top', at: 'left top'}});
 
-        jQuery('body').on('click', function() {
+        jQuery('body').off('click.codemirrorMenu')
+        .on('click.codemirrorMenu', function() {
             // Hide menu and collapse submenus
             setTimeout(function() {
-                menu.menu('collapseAll', null, true);
+                if (menu.data('ui-menu')) {
+                    menu.menu('collapseAll', null, true);
+                }
             }, 200);
             menu.hide();
         });

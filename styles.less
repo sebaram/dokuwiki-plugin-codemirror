@@ -123,6 +123,47 @@ div.dokuwiki div#size__ctl {
     text-decoration: underline;
 }
 
+.cm-ai-review, .cm-ai-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #f4f7f0;
+    font: 12px/1.5 sans-serif;
+    color: #35523a;
+    border-bottom: 1px solid #dce5d6;
+    > span { margin-right: auto; }
+    button {
+        padding: 3px 9px;
+        border: 1px solid #cbd8c6;
+        border-radius: 4px;
+        background: #fff;
+        color: #35523a;
+        cursor: pointer;
+    }
+    button.cm-ai-accept { background: #276b46; color: #fff; }
+    button:focus-visible { outline: 2px solid #276b46; outline-offset: 2px; }
+}
+.CodeMirror .cm-ai-deleted {
+    background: #ffebe7;
+    color: #9b5046;
+    text-decoration: line-through;
+}
+.cm-ai-chunk {
+    border-left: 3px solid #77a470;
+    .cm-ai-added {
+        margin: 0;
+        padding: 5px 10px;
+        background: #eaf5e6;
+        color: #315c32;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font: inherit;
+        border: 0;
+    }
+}
+
 // Reuse AI Assistant's selection, profile, review and Apply flow as a side chat.
 @media (min-width: 1200px) {
     body.cm-editor-active:has(#aiassist-card:not(.aiassist-collapsed)) {

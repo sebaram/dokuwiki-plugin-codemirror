@@ -54,7 +54,7 @@ module.exports = function(grunt) {
                 jshintrc: true,
             },
             scripts: {
-                src: ['init.js', 'mode.js'],
+                src: ['init.js', 'mode.js', 'review.js'],
             },
         },
         uglify: {
@@ -105,6 +105,7 @@ module.exports = function(grunt) {
                     'node_modules/codemirror/addon/scroll/simplescrollbars.js',
                     'node_modules/cm-show-invisibles/lib/show-invisibles.js',
                     'mode.js',
+                    'review.js',
                     'init.js',
                 ],
             },
