@@ -17,13 +17,13 @@ Install a release
 -----------------
 
 Download codemirrorenhanced.tar.gz and SHA256SUMS from
-https://github.com/sebaram/dokuwiki-plugin-codemirror/releases/tag/2026-10-25.2
+https://github.com/sebaram/dokuwiki-plugin-codemirror/releases/tag/2026-10-25.3
 and install the archive through DokuWiki's Extension Manager. The install
 archive includes the generated dist files. GitHub's automatic source archives
 require the build steps below before deployment.
 
-For editor chat and inline AI review, also install AI Assistant 0.1.0 from
-https://github.com/sebaram/dokuwiki-ai-assistant/releases/tag/v0.1.0
+For editor chat and inline AI review, also install AI Assistant 0.1.1 from
+https://github.com/sebaram/dokuwiki-ai-assistant/releases/tag/v0.1.1
 
 Migrate an existing codemirror installation
 ------------------------------------------
@@ -67,7 +67,10 @@ When dokuwiki-ai-assistant is enabled, use its toolbar button or Ctrl/Cmd+K
 to work on the current selection (or the entire document with no selection).
 With AI Assistant 0.1.0, conversation lives in a sidebar and suggested
 additions/deletions appear directly in this editor. Accept or reject individual
-changes or the entire proposal. Accepted changes use normal Undo/Redo. Proposed
+change blocks or the entire proposal. Edits on the same or consecutive source
+lines share one Accept/Reject control; a fully unchanged line separates blocks.
+One Undo restores an accepted block. Large rewrites use one bounded replacement
+block. Accepted changes use normal Undo/Redo. Proposed
 text is not submitted by Preview or Save until accepted. Only an explicit Save
 creates a DokuWiki revision; AI conversation does not create checkpoints.
 The sidebar can use administrator-approved read-only MCP tools when enabled

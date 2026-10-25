@@ -1,7 +1,8 @@
 # Local compatibility checks
 
 `npm run test:review` tests actual CodeMirror inline decorations, partial/all
-acceptance, rejection, native Undo, UTF-16 offsets and stale editor teardown.
+acceptance, multiline block batching, rejection, native Undo, UTF-16 offsets
+and stale editor teardown.
 The adjacent AI Assistant repository's `tests/integration/editor-chat.browser.cjs`
 and `editor-chat-lifecycle.browser.cjs` test the new chat, MCP and Save boundaries.
 They use a separate `/tmp/editor-chat-wiki` fixture, not the saved-profile wiki.

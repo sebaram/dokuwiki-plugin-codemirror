@@ -57,14 +57,41 @@
         if (original !== snapshot.slice(from, to)) {
             throw new Error('Proposal does not match the original source');
         }
+        changes = changes.filter(function(change) {
+            return change.removed !== change.added;
+        });
         if (changes.length > 100) {
             // Bound decoration count for large, extensively rewritten text.
             return [{from: from, to: to, removed: original,
                 added: replacement, status: 'pending'}];
         }
-        return changes.filter(function(change) {
-            return change.removed !== change.added;
+        var groups = [];
+        function lineAt(index) {
+            return original.slice(0, index - from)
+                .split(/\r\n|\r|\n/).length - 1;
+        }
+        changes.forEach(function(change) {
+            var previous = groups[groups.length - 1];
+            if (previous) {
+                var endLine = lineAt(previous.to > previous.from ?
+                    previous.to - 1 : previous.to);
+                // A full-line insertion leaves the next source line untouched.
+                if (!previous.removed && /[\r\n]$/.test(previous.added) &&
+                    (previous.from === 0 ||
+                        /[\r\n]/.test(snapshot.charAt(previous.from - 1)))) {
+                    endLine -= 1;
+                }
+                if (lineAt(change.from) <= endLine + 1) {
+                    var gap = snapshot.slice(previous.to, change.from);
+                    previous.removed += gap + change.removed;
+                    previous.added += gap + change.added;
+                    previous.to = change.to;
+                    return;
+                }
+            }
+            groups.push(change);
         });
+        return groups;
     }
 
     function show(field, options) {
@@ -182,8 +209,8 @@
             bar.setAttribute('role', 'region');
             bar.setAttribute('aria-label', labels.review || 'Proposed changes');
             var count = document.createElement('span');
-            count.textContent = list.length + ' ' +
-                (labels.changes || 'proposed changes');
+            count.textContent = (labels.changes || 'Change blocks') + ': ' +
+                list.length;
             count.setAttribute('aria-live', 'polite');
             bar.appendChild(count);
             bar.appendChild(button('Previous', function() { navigate(-1); }));
@@ -216,7 +243,7 @@
                 var controls = document.createElement('div');
                 controls.className = 'cm-ai-controls';
                 var description = document.createElement('span');
-                description.textContent = (labels.change || 'Change') + ' ' +
+                description.textContent = (labels.change || 'Block') + ' ' +
                     (list.indexOf(index) + 1) + '/' + list.length;
                 controls.appendChild(description);
                 controls.appendChild(button('Reject', function() {
