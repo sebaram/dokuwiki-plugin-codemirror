@@ -1,6 +1,6 @@
 <?php
 /**
- * CodeMirror plugin for DokuWiki
+ * CodeMirror Enhanced for DokuWiki, maintained by sebaram
  *
  * @author Albert Gasset <albertgasset@fsfe.org>
  * @license GNU GPL version 2 or later

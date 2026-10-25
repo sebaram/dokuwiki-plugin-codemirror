@@ -1,5 +1,10 @@
-CodeMirror plugin for DokuWiki
-==============================
+CodeMirror Enhanced for DokuWiki
+================================
+
+Maintained and adapted by sebaram, based on Albert Gasset's original
+CodeMirror plugin. Original copyright and GPL licensing are preserved below.
+The plugin ID and installation directory remain codemirror for existing
+settings, integrations and in-place updates.
 
 Documentation for this plugin can be found at
 http://www.dokuwiki.org/plugin:codemirror
@@ -12,7 +17,7 @@ Install a release
 -----------------
 
 Download dokuwiki-plugin-codemirror.tar.gz and SHA256SUMS from
-https://github.com/sebaram/dokuwiki-plugin-codemirror/releases/tag/2026-10-25
+https://github.com/sebaram/dokuwiki-plugin-codemirror/releases/tag/2026-10-25.1
 and install the archive through DokuWiki's Extension Manager. The install
 archive includes the generated dist files. GitHub's automatic source archives
 require the build steps below before deployment.
@@ -51,6 +56,24 @@ selection/scroll after AI Assistant's Ctrl/Cmd+S shortcut. Apply it from
 the aiassist plugin directory with patch -p1 (or install the updated editor.js
 from the adjacent dokuwiki-ai-assistant repository). The patch is included
 in the install archive and is already applied in the local test wiki.
+
+Extension Manager compatibility notice
+--------------------------------------
+
+DokuWiki's public extension catalog identifies this installation by the
+codemirror plugin ID. Its conflict list belongs to the upstream catalog
+entry and is not read from this fork's plugin.info.txt. Renaming the display
+name or author cannot remove that catalog warning. The catalog may also
+offer an upstream update; update this fork from its sebaram release archive.
+
+Fastwiki full and block editing, Preview/Cancel/reopen and exact section
+Save are covered by this fork's browser checks. LinkSuggest is a separate
+textarea autocomplete extension; its completion dropdown is not integrated
+into CodeMirror. Switch to the Native DokuWiki editor in the settings menu
+when using LinkSuggest. The built-in link wizard remains available in
+CodeMirror. Do not treat a catalog warning as evidence of a runtime failure,
+or the tested Fastwiki integration as a claim that every listed extension
+is supported.
 
 Build and checks (Node.js 22+)
 -----------------------------
