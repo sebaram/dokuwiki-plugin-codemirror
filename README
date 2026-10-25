@@ -7,6 +7,47 @@ http://www.dokuwiki.org/plugin:codemirror
 Source code for this plugin can be found at
 https://github.com/albertgasset/dokuwiki-plugin-codemirror
 
+Modern DokuWiki compatibility
+----------------------------
+
+Tested on DokuWiki 2026-07-14c "Mort", PHP 8.3.6 and Chromium with the
+local 61-extension compatibility mirror. CodeMirror 5 is retained so the
+existing settings, themes, keymaps and DokuWiki toolbar integrations work.
+
+The plugin supports Fastwiki AJAX editing/preview/reopen, ProseMirror
+switching, native textarea-based extensions and lazy-loaded code languages.
+Fastwiki's inline section buttons also survive Wiki-Style Script rebuilding
+form contents, so one block can be edited without loading the whole page.
+Code and file blocks can also be highlighted in page views when codesyntax
+is enabled, while retaining DokuWiki's native Copy buttons. Common extension
+tags and macros are colored; their individual
+plugin grammars are not validated by this editor.
+
+When dokuwiki-ai-assistant is enabled, use its toolbar button or Ctrl/Cmd+K
+to work on the current selection (or the entire document with no selection).
+Desktop AI review opens as a side panel; mobile keeps the floating card.
+Generated text is applied only after review and can be undone in the editor.
+The companion compat/aiassist-editor.patch also restores CodeMirror
+selection/scroll after AI Assistant's Ctrl/Cmd+S shortcut. Apply it from
+the aiassist plugin directory with patch -p1 (or install the updated editor.js
+from the adjacent dokuwiki-ai-assistant repository). The patch is included
+in the install archive and is already applied in the local test wiki.
+
+Build and checks (Node.js 22+)
+-----------------------------
+
+    npm ci
+    npm run build
+    npm test
+    npx grunt dist
+
+Install the resulting dokuwiki-plugin-codemirror.tar.gz through Extension
+Manager, or copy the release contents into lib/plugins/codemirror. The dist
+directory is generated and must be included when deploying from source.
+
+See tests/README.md for browser checks and local extension compatibility
+limits. All compatibility testing uses a disposable wiki and a mock AI API.
+
 ----
 
 Copyright (C) 2014-2017  Albert Gasset <albertgasset@fsfe.org>

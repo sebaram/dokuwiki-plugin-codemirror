@@ -122,3 +122,25 @@ div.dokuwiki div#size__ctl {
 .cm-underline {
     text-decoration: underline;
 }
+
+// Reuse AI Assistant's selection, profile, review and Apply flow as a side chat.
+@media (min-width: 1200px) {
+    body.cm-editor-active:has(#aiassist-card:not(.aiassist-collapsed)) {
+        form#dw__editform .CodeMirror {
+            margin-right: 380px;
+        }
+    }
+    body.cm-editor-active #aiassist-card:not(.aiassist-collapsed) {
+        position: fixed;
+        left: auto !important;
+        right: 16px;
+        top: 80px !important;
+        width: 350px;
+        max-height: ~"calc(100vh - 100px)" !important;
+    }
+    body.cm-editor-active #aiassist-card .aiassist-card-scope {
+        margin-left: 24px;
+        border-radius: 12px 12px 0 12px;
+        background: #edf4f0;
+    }
+}

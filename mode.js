@@ -266,7 +266,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
     }, {
         name: 'quote', // 220,
         type: 'container',
-        allowedTypess: ['formatting', 'substition', 'disabled', 'protected'],
+        allowedTypes: ['formatting', 'substition', 'disabled', 'protected'],
         entries: [{sol: true, match: /^>{1,}/, style: 'def'}],
         patterns: [
             {sol: true, match: /^>{1,}/, style: 'def'},
@@ -323,7 +323,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
         dokuModes.push({
             name: 'camelcaselink', // 290
             type: 'substition',
-            emtry: [{
+            entries: [{
                 behind: /\B$/,
                 match: /^[A-Z]+[a-z]+[A-Z][A-Za-z]*\b/,
                 exit: true,
@@ -354,6 +354,17 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
         type: 'substition',
         entries: [{match: '{{rss>', style: 'tag'}],
         patterns: [{match: '}}', exit: true, style: 'tag'}],
+    }, {
+        name: 'pluginmacro',
+        type: 'substition',
+        entries: [{match: /^\{\{[a-z][\w-]*>[^\n]*?\}\}/i, exit: true}],
+        style: 'meta',
+    }, {
+        name: 'plugintag',
+        type: 'substition',
+        entries: [{match: /^<\/?[a-z][\w:-]*(?:\s[^<>]*?)?\s*\/?>/i,
+                   exit: true}],
+        style: 'tag',
     }, {
         name: 'media', // 320
         type: 'substition',

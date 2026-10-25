@@ -8,36 +8,32 @@
 
 if(!defined('DOKU_INC')) die();
 
-require_once DOKU_INC . 'inc/parser/parser.php';
-
-class action_plugin_codemirror extends DokuWiki_Action_Plugin {
+class action_plugin_codemirror extends \dokuwiki\Extension\ActionPlugin {
 
     static $actions = array('edit', 'create', 'source', 'preview',
                             'locked', 'draft', 'recover', 'show');
 
-    public function register(Doku_Event_Handler $controller) {
+    public function register(\dokuwiki\Extension\EventHandler $controller) {
         $controller->register_hook('TPL_METAHEADER_OUTPUT', 'BEFORE',
                                    $this, 'handle_tpl_metaheader_output');
     }
 
-    public function handle_tpl_metaheader_output(Doku_Event &$event, $param) {
-        global $ACT, $INFO, $conf;
-
-        if ($ACT == 'show' and !$this->getConf('codesyntax')) {
-            return;
-        }
+    public function handle_tpl_metaheader_output(\dokuwiki\Extension\Event $event, $param) {
+        global $ACT, $conf;
 
         if (!in_array($ACT, self::$actions)) {
             return;
         }
 
         $info = $this->getInfo();
-        $version = str_replace('-', '', $info['date']);
+        $version = str_replace('-', '', $info['date']) . '-' .
+            filemtime(__DIR__ . '/dist/scripts.min.js');
         $base_url = DOKU_BASE . 'lib/plugins/codemirror';
-        $mode_acronym = new Doku_Parser_Mode_acronym(array_keys(getAcronyms()));
+        $acronyms = array_keys(getAcronyms());
+        usort($acronyms, function ($a, $b) { return strlen($b) <=> strlen($a); });
 
         $jsinfo = array(
-            'acronyms' => $mode_acronym->acronyms,
+            'acronyms' => $acronyms,
             'baseURL' => $base_url,
             'camelcase' => (bool) $conf['camelcase'],
             'codesyntax' => $this->getConf('codesyntax'),
@@ -59,13 +55,15 @@ class action_plugin_codemirror extends DokuWiki_Action_Plugin {
 
         $event->data['script'][] = array(
             'type' => 'text/javascript',
-            '_data' => 'JSINFO.plugin_codemirror = ' . json_encode($jsinfo),
+            '_data' => 'JSINFO.plugin_codemirror = ' . json_encode($jsinfo,
+                JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';',
         );
 
         $event->data['script'][] = array(
             'type' => 'text/javascript',
             'charset' => 'utf-8',
             'src' => "$base_url/dist/scripts.min.js?v=$version",
+            'defer' => 'defer',
         );
     }
 }

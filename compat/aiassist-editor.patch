@@ -1,0 +1,41 @@
+diff --git a/editor.js b/editor.js
+index d93785a..a7c4b24 100644
+--- a/editor.js
++++ b/editor.js
+@@ -26,2 +26,6 @@
+     }
++    function codeMirror(field) {
++        var wrapper = field && field.nextElementSibling;
++        return wrapper && wrapper.CodeMirror;
++    }
+     function init() { var form = currentForm(); if (form) describe(form); }
+@@ -45,2 +49,11 @@
+             state.direction = editor.selectionDirection; state.scroll = editor.scrollTop;
++            var cm = codeMirror(editor);
++            if (cm) {
++                cm.save();
++                var doc = cm.getDoc();
++                state.start = doc.indexFromPos(doc.getCursor('from'));
++                state.end = doc.indexFromPos(doc.getCursor('to'));
++                state.direction = doc.indexFromPos(doc.getCursor('anchor')) > doc.indexFromPos(doc.getCursor('head')) ? 'backward' : 'forward';
++                state.scroll = cm.getScrollInfo().top;
++            }
+         } else if (state.focus === 'summary') {
+@@ -95,3 +108,4 @@
+             var field = state.focus === 'prosemirror' ? form.querySelector('.ProseMirror') : form.elements[state.focus];
+-            if (!field || !field.getClientRects().length) {if (++attempts < 30) window.setTimeout(apply, 100); return;}
++            var cm = codeMirror(field), visible = cm ? cm.getWrapperElement() : field;
++            if (!visible || !visible.getClientRects().length) {if (++attempts < 30) window.setTimeout(apply, 100); return;}
+             field.focus({preventScroll: true});
+@@ -100,3 +114,10 @@
+             }
+-            if (Number.isFinite(state.scroll)) field.scrollTop = state.scroll;
++            if (cm) {
++                cm.focus();
++                if (Number.isInteger(state.start) && Number.isInteger(state.end)) {
++                    var doc = cm.getDoc(), from = doc.posFromIndex(state.start), to = doc.posFromIndex(state.end);
++                    doc.setSelection(state.direction === 'backward' ? to : from, state.direction === 'backward' ? from : to);
++                }
++                if (Number.isFinite(state.scroll)) cm.scrollTo(null, state.scroll);
++            } else if (Number.isFinite(state.scroll)) field.scrollTop = state.scroll;
+             if (Number.isFinite(state.x) && Number.isFinite(state.y)) window.scrollTo(state.x, state.y);

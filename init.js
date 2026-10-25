@@ -11,7 +11,7 @@
 jQuery(function() {
     'use strict';
 
-    var cm, dokuMode;
+    var cm, dokuMode, nativeEditor, resizeObserver, syncing = false;
 
     var codeModes = {
         apl: {name: 'apl'},
@@ -180,6 +180,12 @@ jQuery(function() {
         z80: {name: 'z80'},
     };
 
+    jQuery.each({js: 'javascript', ts: 'typescript', py: 'python',
+        sh: 'bash', shell: 'bash', yml: 'yaml', 'c++': 'cpp', 'c#': 'csharp'},
+    function(alias, language) {
+        codeModes[alias] = codeModes[language];
+    });
+
     var settings = {
         activeline: {
             default_: '0',
@@ -285,7 +291,7 @@ jQuery(function() {
                 'icecoder',
                 'isotope',
                 'lesser-dark',
-                'liquidbyte',
+                'liquibyte',
                 'material',
                 'mbo',
                 'mdn-like',
@@ -325,38 +331,91 @@ jQuery(function() {
 
     CodeMirror.modeURL = url('/dist/modes/%N.min.js');
 
-    if (textarea.length) {
-        initMode();
-        initHooks();
-        initSettingsMenu();
+    initMode();
+    initHooks();
+    refreshEditor();
+    jQuery(window).on('fastwiki:afterSwitch', refreshEditor);
 
-        if (getSetting('nativeeditor') === '0') {
+    // ProseMirror exposes these transitions for asynchronous conversion.
+    if (window.showProsemirror && window.showDefaultEditor) {
+        var showProsemirror = window.showProsemirror;
+        var showDefaultEditor = window.showDefaultEditor;
+        window.showProsemirror = function(json) {
+            if (cm) {
+                destroyCodeMirror();
+            }
+            return showProsemirror(json);
+        };
+        window.showDefaultEditor = function(text) {
+            var result = showDefaultEditor(text);
+            refreshEditor();
+            return result;
+        };
+    }
+
+    function refreshEditor() {
+        highlightCode();
+        var next = jQuery('#wiki__text');
+        if (textarea.get(0) !== next.get(0)) {
+            if (cm) {
+                destroyCodeMirror();
+            }
+            jQuery('.cm-settings-menu, .cm-settings-button').remove();
+            textarea = next;
+        }
+        if (!textarea.length || window.proseMirrorIsActive) {
+            return;
+        }
+        if (!jQuery('.cm-settings-menu').length) {
+            initSettingsMenu();
+        }
+        if (!cm && getSetting('nativeeditor') === '0') {
             initCodeMirror();
+        }
+        if (cm) {
+            cm.refresh();
         }
     }
 
-    if (JSINFO.plugin_codemirror.codesyntax.toString() === '1') {
-        jQuery('#dokuwiki__content pre.code').each(function(index, element) {
+    function highlightCode() {
+        if (JSINFO.plugin_codemirror.codesyntax.toString() !== '1') {
+            return;
+        }
+        // Wiki-Style Script also discards the native clipboard handlers.
+        if (window.dw_page && typeof window.dw_page.copyCode === 'function') {
+            jQuery('pre.code, pre.file').children('.code-copy-btn').remove();
+            window.dw_page.copyCode();
+        }
+        jQuery('#dokuwiki__content pre.code, #dokuwiki__content pre.file')
+        .not('[data-codemirror-highlighted]')
+        .each(function(index, element) {
             var classNames = element.className.split(' ');
             jQuery.each(classNames, function(index, className) {
-                if (!codeModes[className]) {
+                if (!codeModes.hasOwnProperty(className)) {
                     return;
                 }
                 element.className = element.className + ' cm-s-default';
+                element.setAttribute('data-codemirror-highlighted', 'true');
                 var mode = codeModes[className];
+                var buttons = jQuery(element).children('.code-copy-btn')
+                    .detach();
                 var value = jQuery(element).text();
                 var spec = mode.options || {};
                 spec.name = mode.mime || mode.name;
-                getCodeMode(className, {}, function() {
+                var highlight = function() {
                     CodeMirror.runMode(value, spec, element);
-                });
-                CodeMirror.runMode(value, spec, element);
+                    buttons.appendTo(element);
+                };
+                getCodeMode(className, {}, highlight);
+                highlight();
             });
         });
     }
 
     function getCodeMode(lang, options, onLoadedAsync) {
-        var mode = codeModes[lang] || {name: 'doku-null'};
+        lang = (lang || '').toLowerCase();
+        var mode = codeModes.hasOwnProperty(lang) ? codeModes[lang] :
+            {name: 'doku-null'};
         var deps = [mode.name].concat(mode.deps || []);
         var loadNextDep = function() {
             if (deps.length > 0) {
@@ -381,10 +440,20 @@ jQuery(function() {
 
     function destroyCodeMirror() {
         var selection = window.DWgetSelection(textarea.get(0));
+        var input = textarea.get(0);
+        delete input.value;
+        if (resizeObserver) {
+            resizeObserver.disconnect();
+        }
+        input.focus = nativeEditor.focus;
+        input.setSelectionRange = nativeEditor.setSelectionRange;
+        textarea.off('.codemirror');
         cm.toTextArea();
         cm = null;
-        window.DWsetSelection(selection);
-        textarea.focus();
+        jQuery('body').removeClass('cm-editor-active');
+        if (input.isConnected) {
+            window.DWsetSelection(selection);
+        }
 
         if(JSINFO.plugin_codemirror.autoheight.toString() === '1') {
             jQuery(
@@ -401,6 +470,8 @@ jQuery(function() {
         cm.setOption('readOnly', textarea.prop('readonly'));
         cm.setOption('tabSize', 8);
         cm.setOption('extraKeys', {
+            'Ctrl-K': openAssistant,
+            'Cmd-K': openAssistant,
             'Enter': function(cm) {
                 return indentCommand(cm, 'Enter');
             },
@@ -420,13 +491,33 @@ jQuery(function() {
                 'native' : 'overlay'
         );
         cm.setSize(null, textarea.css('height'));
-        cm.getDoc().on('change', function() {
-            var now = new Date();
-            if (now.getTime() - dw_locktimer.lasttime.getTime() > 30000) {
-                textarea.val(cm.getDoc().getValue());
+        bridgeTextArea();
+        cm.on('change', function() {
+            if (syncing) {
+                return;
+            }
+            syncing = true;
+            cm.save();
+            syncSelection();
+            syncing = false;
+            textarea.get(0).dispatchEvent(new Event('input', {bubbles: true}));
+            if (typeof dw_locktimer !== 'undefined' &&
+                dw_locktimer.lasttime instanceof Date &&
+                Date.now() - dw_locktimer.lasttime.getTime() > 30000) {
                 dw_locktimer.refresh();
             }
         });
+        cm.on('cursorActivity', syncSelection);
+        cm.on('blur', syncSelection);
+        if (window.ResizeObserver) {
+            resizeObserver = new window.ResizeObserver(function() {
+                if (cm) {
+                    cm.refresh();
+                }
+            });
+            resizeObserver.observe(cm.getWrapperElement());
+        }
+        jQuery('body').addClass('cm-editor-active');
         jQuery.each(settings, function(name, setting) {
             if (name !== 'nativeeditor') {
                 var value = getSetting(name);
@@ -447,6 +538,76 @@ jQuery(function() {
         }
     }
 
+    function openAssistant() {
+        if (typeof window.handleAIAssist !== 'function' ||
+            !jQuery('.aiassist_button').length || cm.getOption('readOnly')) {
+            return CodeMirror.Pass;
+        }
+        syncSelection();
+        window.handleAIAssist();
+    }
+
+    function syncSelection() {
+        var doc = cm.getDoc();
+        var direction = doc.indexFromPos(doc.getCursor('anchor')) >
+            doc.indexFromPos(doc.getCursor('head')) ? 'backward' : 'forward';
+        nativeEditor.setSelectionRange.call(textarea.get(0),
+            doc.indexFromPos(doc.getCursor('from')),
+            doc.indexFromPos(doc.getCursor('to')), direction);
+    }
+
+    function bridgeTextArea() {
+        var input = textarea.get(0);
+        var value = Object.getOwnPropertyDescriptor(
+            window.HTMLTextAreaElement.prototype, 'value');
+        nativeEditor = {
+            focus: input.focus,
+            setSelectionRange: input.setSelectionRange
+        };
+        // Extensions use native textarea APIs, including jQuery.val().
+        Object.defineProperty(input, 'value', {
+            configurable: true,
+            get: function() { return value.get.call(input); },
+            set: function(text) {
+                value.set.call(input, text);
+                updateFromTextArea();
+            }
+        });
+        input.setSelectionRange = function(start, end, direction) {
+            nativeEditor.setSelectionRange.call(input, start, end, direction);
+            var doc = cm.getDoc();
+            var from = doc.posFromIndex(input.selectionStart);
+            var to = doc.posFromIndex(input.selectionEnd);
+            doc.setSelection(direction === 'backward' ? to : from,
+                direction === 'backward' ? from : to);
+        };
+        input.focus = function() { cm.focus(); };
+        textarea.on('input.codemirror change.codemirror', updateFromTextArea);
+    }
+
+    function updateFromTextArea() {
+        if (syncing) {
+            return;
+        }
+        var doc = cm.getDoc(), before = doc.getValue(), after = textarea.val();
+        if (before === after) {
+            return;
+        }
+        var start = 0, end = before.length, tail = after.length;
+        while (start < end && start < tail && before[start] === after[start]) {
+            start += 1;
+        }
+        while (end > start && tail > start &&
+            before[end - 1] === after[tail - 1]) {
+            end -= 1;
+            tail -= 1;
+        }
+        syncing = true;
+        doc.replaceRange(after.slice(start, tail), doc.posFromIndex(start),
+            doc.posFromIndex(end), '+input');
+        syncing = false;
+    }
+
     function initMode() {
         dokuMode = JSINFO.plugin_codemirror;
 
@@ -455,13 +616,15 @@ jQuery(function() {
         dokuMode.loadMode = function(lang) {
             var onLoadedAsync = function() {
                 // Reset syntax highlighting
-                cm.setOption('mode', dokuMode);
+                if (cm && getSetting('syntax') === '1') {
+                    cm.setOption('mode', dokuMode);
+                }
             };
             return getCodeMode(lang, cm.options, onLoadedAsync);
         };
 
         dokuMode.validLang = function(lang) {
-            return codeModes[lang] !== undefined;
+            return codeModes.hasOwnProperty(lang.toLowerCase());
         };
 
         CodeMirror.defineMode('doku-null', function() {
@@ -474,11 +637,37 @@ jQuery(function() {
     }
 
     function initHooks() {
+        if (window.plugin_fastwiki && JSINFO.fastwiki &&
+            JSINFO.fastwiki.secedit) {
+            // Wiki-Style Script rebuilds forms, discarding Fastwiki's handlers.
+            jQuery(document).on('click', '.editbutton_section .btn_secedit ' +
+                'button, .editbutton_section .btn_secedit input[type=submit]',
+            function(event) {
+                if (event.isDefaultPrevented()) {
+                    return;
+                }
+                event.preventDefault();
+                var form = jQuery(this).closest('form'), params = {};
+                jQuery.each(form.serializeArray(), function(index, field) {
+                    params[field.name] = field.value;
+                });
+                window.plugin_fastwiki.load('edit', form, params);
+            });
+        }
+        if (window.dw_linkwiz) {
+            var initLinkWizard = window.dw_linkwiz.init;
+            window.dw_linkwiz.init = function(editor) {
+                // Fastwiki's old toolbar selector is empty on modern DokuWiki.
+                if (!editor.length && textarea.length) {
+                    editor = cm ? jQuery(cm.getWrapperElement()) : textarea;
+                }
+                return initLinkWizard.call(this, editor);
+            };
+        }
         var dw = {
             setWrap: dw_editor.setWrap,
             sizeCtl: dw_editor.sizeCtl,
             currentHeadlineLevel: window.currentHeadlineLevel,
-            selection_class: window.selection_class,
             DWgetSelection: window.DWgetSelection || window.getSelection,
             DWsetSelection: window.DWsetSelection || window.setSelection,
             pasteText: window.pasteText,
@@ -503,21 +692,6 @@ jQuery(function() {
                 textarea.val(cm.getDoc().getValue());
             }
             return dw.currentHeadlineLevel(id);
-        };
-
-        window.selection_class = function() {
-            dw.selection_class.apply(this);
-            var dw_getText = this.getText;
-            this.geText = function() {
-                if (cm && textarea.is(this.obj)) {
-                    var doc = cm.getDoc();
-                    var from = doc.indexFromPos(this.start);
-                    var to = doc.indexFromPos(this.end);
-                    return doc.getRange(from, to);
-                } else {
-                    return dw_getText.apply(this);
-                }
-            };
         };
 
         window.DWgetSelection = function(editor) {
@@ -549,11 +723,6 @@ jQuery(function() {
 
         window.pasteText = function(selection, text, opts) {
             if (cm && textarea.is(selection.obj)) {
-                var doc = cm.getDoc();
-                textarea.val(doc.getValue());
-                var from = doc.posFromIndex(selection.start);
-                var to = doc.posFromIndex(selection.end);
-                doc.replaceRange(text, from, to);
                 dw.pasteText(selection, text, opts);
                 cm.focus();
             } else {
@@ -601,14 +770,14 @@ jQuery(function() {
         ];
 
         jQuery.each(items, function(index, name) {
-            var setting = settings[name];
-            var title = LANG.plugins.codemirror['setting_' + name];
-
             // Separator
             if (name === '-') {
                 menu.append('<li>-</li>');
                 return;
             }
+
+            var setting = settings[name];
+            var title = LANG.plugins.codemirror['setting_' + name];
 
             var item = jQuery('<li>');
             var link = jQuery('<a>').html(title);
@@ -805,7 +974,7 @@ jQuery(function() {
     }
 
     function url(path) {
-        return (JSINFO.plugin_codemirror.baseURL + '/' + path +
+        return (JSINFO.plugin_codemirror.baseURL + path +
                 '?v=' + JSINFO.plugin_codemirror.version);
     }
 });

@@ -1,0 +1,117 @@
+{
+  "date": "2026-10-25",
+  "environment": {
+    "dokuwiki": "2026-07-14c Mort",
+    "php": "8.3.6 CLI",
+    "node": "26.12.1",
+    "browser": "Google Chrome for Testing 151.0.7922.34",
+    "codemirror": "5.65.21"
+  },
+  "installed_extensions": 61,
+  "enabled_extensions": 57,
+  "disabled_extensions": [
+    "authad",
+    "authldap",
+    "authpdo",
+    "markdowku"
+  ],
+  "checks": [
+    "Extension Manager loads with CodeMirror enabled; installed extension states recorded",
+    "Rendered wiki headings, formatting, quotes, tables, plugin delimiters and embedded JavaScript/Python",
+    "Lazy-loaded PHP, JS/TS, shell, SQL, CSS, HTML, YAML, aliases and unknown-language fallback",
+    "Toolbar replacement, undo and native textarea value/selection interoperability",
+    "Ctrl+K AI side panel: selected profile, mock HTTP completion, review, Apply and undo",
+    "Stale AI Apply cannot overwrite edits made in CodeMirror during review",
+    "ProseMirror round trip tears down and recreates CodeMirror without text loss",
+    "Preview and native save preserve source; rendered code and file blocks receive syntax colors",
+    "Fastwiki view \u2192 AJAX Edit \u2192 Cancel \u2192 reopen creates exactly one editor and settings menu",
+    "Modern LinkWizard opens and inserts a selected-text link after Fastwiki AJAX Edit",
+    "Settings switch between the native textarea and CodeMirror without losing edits",
+    "AI Assistant Ctrl+S saves and continues in CodeMirror with selection and scroll restored",
+    "AI editing card remains within a 390px mobile viewport",
+    "Source view initializes a read-only highlighted editor without an edit lock timer"
+  ],
+  "browser_errors": [],
+  "other_checks": [
+    "Grunt build and JSHint",
+    "Node parser assertions",
+    "PHP lint",
+    "JavaScript syntax checks",
+    "git diff --check",
+    "Release archive runtime contents",
+    "AI Assistant companion patch applies to baseline"
+  ],
+  "limits": [
+    "Markdowku 2021-12-04 fails on removed Mort parser APIs and remains disabled.",
+    "Three unused alternate authentication backends remain unconfigured and disabled.",
+    "Editor coexistence tested, not every feature of every extension.",
+    "Loopback mock AI only; no paid provider/model-quality testing.",
+    "PHP 8.5 / Apache runtime not tested."
+  ],
+  "artifacts": {
+    "main": "/tmp/codemirror-section-main-regression",
+    "sections": "/tmp/codemirror-section-browser"
+  },
+  "public_tunnel_section_checks": {
+    "transport": "Explicitly approved temporary HTTPS Cloudflare test tunnel",
+    "checks": [
+      "Real keyboard editing synchronizes the textarea and supports undo",
+      "AI chat on the full editor applies only the selected sentence and can be undone",
+      "Highlighted code preserves its exact source and native Copy button copies only code",
+      "Fastwiki inline block edit, keyboard input, AJAX preview and Cancel preserve the saved page",
+      "AI chat works inside a Fastwiki block: selected scope, refinement, reviewed Apply, undo and redo",
+      "Saving the AI-edited block preserves the first/last blocks and surrounding UTF-8 source exactly",
+      "Saved block reopens through Fastwiki with the AI-applied source intact",
+      "Ask wiki chat searches and reads wiki sources, shows cited answers, and leaves the page unchanged"
+    ],
+    "errors": [],
+    "sectionButtons": 4
+  },
+  "total_browser_checks": 22,
+  "fixes_verified": [
+    "Delegated Fastwiki section buttons survive Wiki-Style Script rebuilding forms, with exactly one AJAX edit request per click.",
+    "Highlighting preserves native Copy buttons and excludes their labels from code text; DokuWiki clipboard handlers are restored after Wiki-Style Script rewrites."
+  ],
+  "supplied_plugin_list": {
+    "your_visible_plugins": 55,
+    "missing_locally": [],
+    "local_extras": [
+      "authad",
+      "authldap",
+      "authpdo",
+      "codemirror",
+      "markdowku",
+      "structtemplate"
+    ],
+    "metadata_date_mismatches": [
+      {
+        "id": "addnewpage",
+        "your_date": "2026-09-14",
+        "bundled": false,
+        "your_enabled": true,
+        "local_date": "2026-07-07",
+        "local_enabled": true
+      },
+      {
+        "id": "mdimport",
+        "your_date": "2026-08-28",
+        "bundled": false,
+        "your_enabled": true,
+        "local_date": "2026-03-04",
+        "local_enabled": true
+      },
+      {
+        "id": "todo",
+        "your_date": "2026-09-07",
+        "bundled": false,
+        "your_enabled": true,
+        "local_date": "2025-08-26",
+        "local_enabled": true
+      }
+    ],
+    "enabled_state_mismatches": [],
+    "state_not_shown": [
+      "xbr"
+    ]
+  }
+}

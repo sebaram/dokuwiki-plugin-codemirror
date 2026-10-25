@@ -26,6 +26,7 @@ module.exports = function(grunt) {
                     'LICENSE',
                     'README',
                     'action.php',
+                    'compat/*.patch',
                     'conf/*.php',
                     'dist/**/*.css',
                     'dist/**/*.js',
@@ -59,7 +60,7 @@ module.exports = function(grunt) {
         uglify: {
             options: {
                 compress: false,
-                screwIE8: false,
+                ie8: false,
                 sourceMap: true,
                 sourceMapIncludeSources: true,
             },
